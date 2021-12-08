@@ -17,6 +17,7 @@ var (
 
 func init() {
 	RootCmd.AddCommand(command.ServeVersionCmd)
+	command.AddCreateNoteCommand(RootCmd)
 }
 
 // Execute executes the root command
