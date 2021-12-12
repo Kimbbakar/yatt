@@ -43,7 +43,7 @@ func GetNewLocalStorage() *localStorageRepo {
 	return lStorage
 }
 
-func (l *localStorageRepo) GetNewRow() string {
+func (l *localStorageRepo) getNewRow() string {
 	v, err := l.client.GetCellValue(configSheet, "B"+configDetails["currentCell"]["row"])
 	if err != nil || v == "" {
 		v = configDetails["currentCell"]["default"]
