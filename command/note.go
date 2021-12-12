@@ -11,7 +11,7 @@ func AddCreateNoteCommand(rootCommand *cobra.Command) {
 	createNoteCmd := &cobra.Command{
 		Use:   "create",
 		Short: "create note",
-		RunE:  noteSrv.RunCommand,
+		RunE:  noteSrv.CreateCommand,
 	}
 
 	createNoteCmd.PersistentFlags().StringP("title", "t", "", "add title")

@@ -4,7 +4,10 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/xuri/excelize/v2"
 )
 
@@ -64,4 +67,17 @@ func (l *localStorageRepo) GetNewRow() string {
 	}
 
 	return "A" + strconv.Itoa(curRow+1)
+}
+
+func (l *localStorageRepo) AddNote(note string) {
+	id := uuid.New()
+
+	row := l.getNewRow()
+	if err := l.client.SetSheetRow(noteSheet, row, &[]interface{}{id, time.Now(), note}); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := l.client.Save(); err != nil {
+		log.Fatal(err)
+	}
 }
