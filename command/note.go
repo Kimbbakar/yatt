@@ -17,3 +17,14 @@ func AddCreateNoteCommand(rootCommand *cobra.Command) {
 	createNoteCmd.PersistentFlags().StringP("title", "t", "", "add title")
 	rootCommand.AddCommand(createNoteCmd)
 }
+
+func AddFlashStorageCommand(rootCommand *cobra.Command) {
+	noteSrv := &service.NoteService{}
+	flashStorageCmd := &cobra.Command{
+		Use:   "flash",
+		Short: "flash all note/config",
+		RunE:  noteSrv.FlashStorageCommand,
+	}
+
+	rootCommand.AddCommand(flashStorageCmd)
+}

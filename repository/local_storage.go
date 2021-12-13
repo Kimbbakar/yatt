@@ -81,3 +81,9 @@ func (l *localStorageRepo) AddNote(note string) {
 		log.Fatal(err)
 	}
 }
+
+func (l *localStorageRepo) FlashStorage() {
+	if err := os.RemoveAll(filePath); err != nil {
+		log.Fatal(err)
+	}
+}

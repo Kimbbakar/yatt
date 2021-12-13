@@ -5,8 +5,8 @@ import "sync"
 var (
 	once     sync.Once
 	lStorage *localStorageRepo
-	filePath = "./static/"
-	fileName = "yatt.xlsx"
+	filePath = "/.yatt/"
+	fileName = "storage.xlsx"
 )
 
 const (
