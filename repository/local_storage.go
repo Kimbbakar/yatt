@@ -82,7 +82,6 @@ func (l *localStorageRepo) getNoteSheet() string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println(curRow, rowLimit, curSheet)
 
 	if curRow >= rowLimit {
 		curSheet++
@@ -110,8 +109,34 @@ func (l *localStorageRepo) AddNote(note string) {
 	}
 }
 
+func (l *localStorageRepo) ListNotes(sheetName string) [][]string {
+	notes, err := l.client.GetRows(sheetName)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return notes
+}
+
 func (l *localStorageRepo) FlashStorage() {
 	if err := os.RemoveAll(filePath); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (l *localStorageRepo) NextSheet(sheetName string) string {
+	if sheetName == "" {
+		return l.getNoteSheet()
+	}
+
+	data := strings.Split(sheetName, "-")
+	if data[1] == "0" {
+		return ""
+	}
+
+	curSheet, err := strconv.Atoi(data[1])
+	if err != nil {
+		log.Fatal(err)
+	}
+	return data[0] + "-" + strconv.Itoa(curSheet-1)
 }

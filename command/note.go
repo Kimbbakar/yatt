@@ -14,8 +14,20 @@ func AddCreateNoteCommand(rootCommand *cobra.Command) {
 		RunE:  noteSrv.CreateCommand,
 	}
 
-	createNoteCmd.PersistentFlags().StringP("title", "t", "", "add title")
+	createNoteCmd.PersistentFlags().StringP("note", "n", "", "add note")
 	rootCommand.AddCommand(createNoteCmd)
+}
+
+func AddListNoteCommand(rootCommand *cobra.Command) {
+	noteSrv := &service.NoteService{}
+	listNoteCmd := &cobra.Command{
+		Use:   "list",
+		Short: "list note",
+		RunE:  noteSrv.ListCommand,
+	}
+
+	listNoteCmd.PersistentFlags().IntP("tail", "t", 0, "add title")
+	rootCommand.AddCommand(listNoteCmd)
 }
 
 func AddFlashStorageCommand(rootCommand *cobra.Command) {

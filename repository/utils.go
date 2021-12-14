@@ -8,7 +8,7 @@ var (
 	appName  = "YATT"
 	filePath = "/.yatt/"
 	fileName = "storage.xlsx"
-	rowLimit = 2
+	rowLimit = 20
 )
 
 const (
