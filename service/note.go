@@ -13,15 +13,41 @@ type NoteService struct {
 }
 
 func (n *NoteService) CreateCommand(cmd *cobra.Command, args []string) error {
-	title, _ := cmd.Flags().GetString("title")
-	title = strings.Trim(title, " ")
-	if title == "" {
+	note, _ := cmd.Flags().GetString("note")
+	note = strings.Trim(note, " ")
+	if note == "" {
 		response("empty note not allowed", true, false, true)
 		return nil
 	}
 
 	repo := repository.GetNewLocalStorage()
-	repo.AddNote(title)
+	repo.AddNote(note)
+
+	return nil
+}
+
+func (n *NoteService) ListCommand(cmd *cobra.Command, args []string) error {
+	tail, _ := cmd.Flags().GetInt("tail")
+	if tail == 0 {
+		tail = 20
+	}
+
+	fmt.Println("ID | Date | Note")
+	repo := repository.GetNewLocalStorage()
+	curSheet := repo.NextSheet("")
+	for {
+		if tail <= 0 || curSheet == "" {
+			break
+		}
+
+		notes := repo.ListNotes(curSheet)
+		for i := len(notes) - 1; i >= 0 && tail > 0; i-- {
+			fmt.Printf("%s | %s | %s\n", notes[i][0], notes[i][1], notes[i][2])
+			tail--
+		}
+
+		curSheet = repo.NextSheet(curSheet)
+	}
 
 	return nil
 }
