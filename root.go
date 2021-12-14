@@ -18,6 +18,7 @@ var (
 func init() {
 	RootCmd.AddCommand(command.ServeVersionCmd)
 	command.AddCreateNoteCommand(RootCmd)
+	command.AddFlashStorageCommand(RootCmd)
 }
 
 // Execute executes the root command

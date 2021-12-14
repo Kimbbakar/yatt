@@ -15,8 +15,8 @@ const (
 )
 
 var configDetails = map[string]map[string]string{
-	"currentCell": {
+	"currentRow": {
 		"default": "0",
-		"row":     "2",
+		"value":   "2",
 	},
 }

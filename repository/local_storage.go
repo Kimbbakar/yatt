@@ -44,9 +44,9 @@ func GetNewLocalStorage() *localStorageRepo {
 }
 
 func (l *localStorageRepo) getNewRow() string {
-	v, err := l.client.GetCellValue(configSheet, "B"+configDetails["currentCell"]["row"])
+	v, err := l.client.GetCellValue(configSheet, "B"+configDetails["currentRow"]["value"])
 	if err != nil || v == "" {
-		v = configDetails["currentCell"]["default"]
+		v = configDetails["currentRow"]["default"]
 	}
 
 	curRow, err := strconv.Atoi(v)
@@ -54,11 +54,11 @@ func (l *localStorageRepo) getNewRow() string {
 		log.Fatal(err)
 	}
 
-	if err := l.client.SetCellValue(configSheet, "A"+configDetails["currentCell"]["row"], "currentCell"); err != nil {
+	if err := l.client.SetCellValue(configSheet, "A"+configDetails["currentRow"]["value"], "currentRow"); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := l.client.SetCellValue(configSheet, "B"+configDetails["currentCell"]["row"], curRow+1); err != nil {
+	if err := l.client.SetCellValue(configSheet, "B"+configDetails["currentRow"]["value"], curRow+1); err != nil {
 		log.Fatal(err)
 	}
 
