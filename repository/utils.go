@@ -5,8 +5,10 @@ import "sync"
 var (
 	once     sync.Once
 	lStorage *localStorageRepo
+	appName  = "YATT"
 	filePath = "/.yatt/"
 	fileName = "storage.xlsx"
+	rowLimit = 2
 )
 
 const (
@@ -15,8 +17,12 @@ const (
 )
 
 var configDetails = map[string]map[string]string{
-	"currentCell": {
+	"currentRow": {
 		"default": "0",
 		"row":     "2",
+	},
+	"currentNoteSheet": {
+		"default": "0",
+		"row":     "3",
 	},
 }

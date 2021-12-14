@@ -37,7 +37,7 @@ func (n *NoteService) FlashStorageCommand(cmd *cobra.Command, args []string) err
 		response("Wrong input", true, false, true)
 	} else if confirm == "Y" {
 		repo.FlashStorage()
-		response("storage flashed", false, false, true)
+		response("Storage flashed", false, false, true)
 	}
 
 	return nil
