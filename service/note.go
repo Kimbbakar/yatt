@@ -32,7 +32,6 @@ func (n *NoteService) ListCommand(cmd *cobra.Command, args []string) error {
 		tail = 20
 	}
 
-	fmt.Println("ID | Date | Note")
 	repo := repository.GetNewLocalStorage()
 	curSheet := repo.NextSheet("")
 	for {
@@ -42,8 +41,13 @@ func (n *NoteService) ListCommand(cmd *cobra.Command, args []string) error {
 
 		notes := repo.ListNotes(curSheet)
 		for i := len(notes) - 1; i >= 0 && tail > 0; i-- {
-			fmt.Printf("%s | %s | %s\n", notes[i][0], notes[i][1], notes[i][2])
+			fmt.Printf("ID: %s\n", notes[i][1])
+			fmt.Printf("Date: %s\n\n", notes[i][2])
+			fmt.Print("    ")
+			fmt.Printf("Note: %s\n", notes[i][3])
 			tail--
+
+			fmt.Println()
 		}
 
 		curSheet = repo.NextSheet(curSheet)
