@@ -2,6 +2,8 @@ package service
 
 import (
 	"fmt"
+	"log"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -32,7 +34,6 @@ func (n *NoteService) ListCommand(cmd *cobra.Command, args []string) error {
 		tail = 20
 	}
 
-	fmt.Println("ID | Date | Note")
 	repo := repository.GetNewLocalStorage()
 	curSheet := repo.NextSheet("")
 	for {
@@ -42,8 +43,19 @@ func (n *NoteService) ListCommand(cmd *cobra.Command, args []string) error {
 
 		notes := repo.ListNotes(curSheet)
 		for i := len(notes) - 1; i >= 0 && tail > 0; i-- {
-			fmt.Printf("%s | %s | %s\n", notes[i][0], notes[i][1], notes[i][2])
+			if deleted, err := strconv.Atoi(notes[i][4]); err != nil {
+				log.Fatal(err)
+			} else if deleted == 1 {
+				continue
+			}
+
+			fmt.Printf("ID: %s\n", notes[i][1])
+			fmt.Printf("Date: %s\n\n", notes[i][2])
+			fmt.Print("    ")
+			fmt.Printf("Note: %s\n", notes[i][3])
 			tail--
+
+			fmt.Println()
 		}
 
 		curSheet = repo.NextSheet(curSheet)
@@ -66,5 +78,39 @@ func (n *NoteService) FlashStorageCommand(cmd *cobra.Command, args []string) err
 		response("Storage flashed", false, false, true)
 	}
 
+	return nil
+}
+
+func (n *NoteService) DeleteCommand(cmd *cobra.Command, args []string) error {
+	id := args[0]
+
+	repo := repository.GetNewLocalStorage()
+	curSheet := repo.NextSheet("")
+	for {
+		if curSheet == "" {
+			break
+		}
+
+		notes := repo.ListNotes(curSheet)
+		for i := len(notes) - 1; i >= 0; i-- {
+			if strings.HasPrefix(notes[i][1], id) {
+				row := strings.Split(notes[i][0], "-")[2]
+
+				updateValue := make([]interface{}, len(notes[i]))
+				for idx, v := range notes[i] {
+					updateValue[idx] = v
+				}
+
+				updateValue[4] = true
+				repo.UpdateNote(curSheet, row, updateValue)
+				response("Note has been deleted successfully", false, false, true)
+				return nil
+			}
+		}
+
+		curSheet = repo.NextSheet(curSheet)
+	}
+
+	response("No note found with given ID", false, false, true)
 	return nil
 }

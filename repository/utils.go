@@ -1,6 +1,11 @@
 package repository
 
-import "sync"
+import (
+	"strings"
+	"sync"
+
+	"github.com/google/uuid"
+)
 
 var (
 	once     sync.Once
@@ -25,4 +30,9 @@ var configDetails = map[string]map[string]string{
 		"default": "0",
 		"row":     "3",
 	},
+}
+
+func getUniqueID() string {
+	id := uuid.New().String()
+	return strings.Replace(id, "-", "", -1)
 }

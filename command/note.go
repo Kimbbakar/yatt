@@ -30,6 +30,17 @@ func AddListNoteCommand(rootCommand *cobra.Command) {
 	rootCommand.AddCommand(listNoteCmd)
 }
 
+func AddDeleteNoteCommand(rootCommand *cobra.Command) {
+	noteSrv := &service.NoteService{}
+	deleteNoteCmd := &cobra.Command{
+		Use:   "delete",
+		Short: "delete note",
+		RunE:  noteSrv.DeleteCommand,
+	}
+
+	rootCommand.AddCommand(deleteNoteCmd)
+}
+
 func AddFlashStorageCommand(rootCommand *cobra.Command) {
 	noteSrv := &service.NoteService{}
 	flashStorageCmd := &cobra.Command{
