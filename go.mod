@@ -1,4 +1,4 @@
-module github.com/kimbbakar/yatt
+module github.com/Kimbbakar/yatt
 
 go 1.16
 
