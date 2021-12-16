@@ -45,6 +45,7 @@ func (n *NoteService) ListCommand(cmd *cobra.Command, args []string) error {
 			fmt.Printf("Date: %s\n\n", notes[i][2])
 			fmt.Print("    ")
 			fmt.Printf("Note: %s\n", notes[i][3])
+			fmt.Printf("Note: %s\n", notes[i][4])
 			tail--
 
 			fmt.Println()
@@ -70,5 +71,39 @@ func (n *NoteService) FlashStorageCommand(cmd *cobra.Command, args []string) err
 		response("Storage flashed", false, false, true)
 	}
 
+	return nil
+}
+
+func (n *NoteService) DeleteCommand(cmd *cobra.Command, args []string) error {
+	id := args[0]
+
+	repo := repository.GetNewLocalStorage()
+	curSheet := repo.NextSheet("")
+	for {
+		if curSheet == "" {
+			break
+		}
+
+		notes := repo.ListNotes(curSheet)
+		for i := len(notes) - 1; i >= 0; i-- {
+			if strings.HasPrefix(notes[i][1], id) {
+				row := strings.Split(notes[i][0], "-")[2]
+
+				updateValue := make([]interface{}, len(notes[i]))
+				for idx, v := range notes[i] {
+					updateValue[idx] = v
+				}
+
+				updateValue[4] = true
+				repo.UpdateNote(curSheet, row, updateValue)
+				response("Note has been deleted successfully", false, false, false)
+				return nil
+			}
+		}
+
+		curSheet = repo.NextSheet(curSheet)
+	}
+
+	response("No note found with given ID", false, false, false)
 	return nil
 }

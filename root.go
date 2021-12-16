@@ -20,6 +20,7 @@ func init() {
 	command.AddCreateNoteCommand(RootCmd)
 	command.AddFlashStorageCommand(RootCmd)
 	command.AddListNoteCommand(RootCmd)
+	command.AddDeleteNoteCommand(RootCmd)
 }
 
 func main() {
