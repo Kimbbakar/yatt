@@ -2,6 +2,8 @@ package service
 
 import (
 	"fmt"
+	"log"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -41,11 +43,16 @@ func (n *NoteService) ListCommand(cmd *cobra.Command, args []string) error {
 
 		notes := repo.ListNotes(curSheet)
 		for i := len(notes) - 1; i >= 0 && tail > 0; i-- {
+			if deleted, err := strconv.Atoi(notes[i][4]); err != nil {
+				log.Fatal(err)
+			} else if deleted == 1 {
+				continue
+			}
+
 			fmt.Printf("ID: %s\n", notes[i][1])
 			fmt.Printf("Date: %s\n\n", notes[i][2])
 			fmt.Print("    ")
 			fmt.Printf("Note: %s\n", notes[i][3])
-			fmt.Printf("Note: %s\n", notes[i][4])
 			tail--
 
 			fmt.Println()
@@ -96,7 +103,7 @@ func (n *NoteService) DeleteCommand(cmd *cobra.Command, args []string) error {
 
 				updateValue[4] = true
 				repo.UpdateNote(curSheet, row, updateValue)
-				response("Note has been deleted successfully", false, false, false)
+				response("Note has been deleted successfully", false, false, true)
 				return nil
 			}
 		}
@@ -104,6 +111,6 @@ func (n *NoteService) DeleteCommand(cmd *cobra.Command, args []string) error {
 		curSheet = repo.NextSheet(curSheet)
 	}
 
-	response("No note found with given ID", false, false, false)
+	response("No note found with given ID", false, false, true)
 	return nil
 }
