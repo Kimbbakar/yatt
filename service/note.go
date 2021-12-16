@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/kimbbakar/yatt/repository"
+	"github.com/Kimbbakar/yatt/repository"
 )
 
 type NoteService struct {

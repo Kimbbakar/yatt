@@ -3,7 +3,7 @@ package command
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/kimbbakar/yatt/service"
+	"github.com/Kimbbakar/yatt/service"
 )
 
 func AddCreateNoteCommand(rootCommand *cobra.Command) {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/kimbbakar/yatt/command"
+	"github.com/Kimbbakar/yatt/command"
 	"github.com/spf13/cobra"
 )
 
