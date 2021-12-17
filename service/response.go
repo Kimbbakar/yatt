@@ -1,6 +1,9 @@
 package service
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 func response(msg string, isError, isWarning, newline bool) {
 	if isError {
@@ -13,5 +16,9 @@ func response(msg string, isError, isWarning, newline bool) {
 
 	if newline {
 		fmt.Print("\n")
+	}
+
+	if isError {
+		os.Exit(1)
 	}
 }

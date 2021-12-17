@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
@@ -19,7 +18,6 @@ func (n *NoteService) CreateCommand(cmd *cobra.Command, args []string) error {
 	note = strings.Trim(note, " ")
 	if note == "" {
 		response("empty note not allowed", true, false, true)
-		return nil
 	}
 
 	repo := repository.GetNewLocalStorage()
@@ -35,16 +33,23 @@ func (n *NoteService) ListCommand(cmd *cobra.Command, args []string) error {
 	}
 
 	repo := repository.GetNewLocalStorage()
-	curSheet := repo.NextSheet("")
+	curSheet, err := repo.NextSheet("")
+	if err != nil {
+		response(err.Error(), true, false, true)
+	}
 	for {
 		if tail <= 0 || curSheet == "" {
 			break
 		}
 
-		notes := repo.ListNotes(curSheet)
+		notes, err := repo.ListNotes(curSheet)
+		if err != nil {
+			response(err.Error(), true, false, true)
+		}
+
 		for i := len(notes) - 1; i >= 0 && tail > 0; i-- {
 			if deleted, err := strconv.Atoi(notes[i][4]); err != nil {
-				log.Fatal(err)
+				response(err.Error(), true, false, true)
 			} else if deleted == 1 {
 				continue
 			}
@@ -58,7 +63,10 @@ func (n *NoteService) ListCommand(cmd *cobra.Command, args []string) error {
 			fmt.Println()
 		}
 
-		curSheet = repo.NextSheet(curSheet)
+		curSheet, err = repo.NextSheet(curSheet)
+		if err != nil {
+			response(err.Error(), true, false, true)
+		}
 	}
 
 	return nil
@@ -85,13 +93,21 @@ func (n *NoteService) DeleteCommand(cmd *cobra.Command, args []string) error {
 	id := args[0]
 
 	repo := repository.GetNewLocalStorage()
-	curSheet := repo.NextSheet("")
+	curSheet, err := repo.NextSheet("")
+	if err != nil {
+		response(err.Error(), true, false, true)
+	}
+
 	for {
 		if curSheet == "" {
 			break
 		}
 
-		notes := repo.ListNotes(curSheet)
+		notes, err := repo.ListNotes(curSheet)
+		if err != nil {
+			response(err.Error(), true, false, true)
+		}
+
 		for i := len(notes) - 1; i >= 0; i-- {
 			if strings.HasPrefix(notes[i][1], id) {
 				row := strings.Split(notes[i][0], "-")[2]
@@ -108,7 +124,10 @@ func (n *NoteService) DeleteCommand(cmd *cobra.Command, args []string) error {
 			}
 		}
 
-		curSheet = repo.NextSheet(curSheet)
+		curSheet, err = repo.NextSheet(curSheet)
+		if err != nil {
+			response(err.Error(), true, false, true)
+		}
 	}
 
 	response("No note found with given ID", false, false, true)

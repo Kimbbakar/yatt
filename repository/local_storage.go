@@ -48,39 +48,37 @@ func (l *localStorageRepo) getConfig(key string) string {
 	return v
 }
 
-func (l *localStorageRepo) setConfig(key string, value interface{}) {
+func (l *localStorageRepo) setConfig(key string, value interface{}) error {
 	if err := l.client.SetCellValue(configSheet, "A"+configDetails[key]["row"], key); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	if err := l.client.SetCellValue(configSheet, "B"+configDetails[key]["row"], value); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	if err := l.client.Save(); err != nil {
-		log.Fatal(err)
-	}
+	return l.client.Save()
 }
 
-func (l *localStorageRepo) getNewRow() string {
+func (l *localStorageRepo) getNewRow() (string, error) {
 	curRow, err := strconv.Atoi(l.getConfig("currentRow"))
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
 	l.setConfig("currentRow", curRow+1)
-	return "A" + strconv.Itoa(curRow+1)
+	return "A" + strconv.Itoa(curRow+1), nil
 }
 
-func (l *localStorageRepo) getNoteSheet() string {
+func (l *localStorageRepo) getNoteSheet() (string, error) {
 	curRow, err := strconv.Atoi(l.getConfig("currentRow"))
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
 	curSheet, err := strconv.Atoi(l.getConfig("currentNoteSheet"))
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
 	if curRow >= rowLimit {
@@ -92,64 +90,59 @@ func (l *localStorageRepo) getNoteSheet() string {
 	l.client.NewSheet(sheet)
 	l.setConfig("currentNoteSheet", curSheet)
 
-	return sheet
+	return sheet, nil
 }
 
-func (l *localStorageRepo) AddNote(note string) {
-	sheet := l.getNoteSheet()
-	row := l.getNewRow()
+func (l *localStorageRepo) AddNote(note string) error {
+	sheet, err := l.getNoteSheet()
+	if err != nil {
+		return err
+	}
+	row, err := l.getNewRow()
+	if err != nil {
+		return err
+	}
 	key := appName + "-" + strings.Split(sheet, "-")[1] + "-" + row
 	id := getUniqueID()
 	date := time.Now().Format(time.RFC1123)
 
 	// key - id - date - note - deleted
 	if err := l.client.SetSheetRow(sheet, row, &[]interface{}{key, id, date, note, false}); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	if err := l.client.Save(); err != nil {
-		log.Fatal(err)
-	}
+	return l.client.Save()
 }
 
-func (l *localStorageRepo) UpdateNote(sheet, row string, value []interface{}) {
+func (l *localStorageRepo) UpdateNote(sheet, row string, value []interface{}) error {
 	if err := l.client.SetSheetRow(sheet, row, &value); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	if err := l.client.Save(); err != nil {
-		log.Fatal(err)
-	}
+	return l.client.Save()
 }
 
-func (l *localStorageRepo) ListNotes(sheetName string) [][]string {
-	notes, err := l.client.GetRows(sheetName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return notes
+func (l *localStorageRepo) ListNotes(sheetName string) ([][]string, error) {
+	return l.client.GetRows(sheetName)
 }
 
-func (l *localStorageRepo) FlashStorage() {
-	if err := os.RemoveAll(filePath); err != nil {
-		log.Fatal(err)
-	}
+func (l *localStorageRepo) FlashStorage() error {
+	return os.RemoveAll(filePath)
 }
 
-func (l *localStorageRepo) NextSheet(sheetName string) string {
+func (l *localStorageRepo) NextSheet(sheetName string) (string, error) {
 	if sheetName == "" {
 		return l.getNoteSheet()
 	}
 
 	data := strings.Split(sheetName, "-")
 	if data[1] == "0" {
-		return ""
+		return "", nil
 	}
 
 	curSheet, err := strconv.Atoi(data[1])
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
-	return data[0] + "-" + strconv.Itoa(curSheet-1)
+	return data[0] + "-" + strconv.Itoa(curSheet-1), nil
 }
