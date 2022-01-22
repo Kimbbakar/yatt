@@ -1,7 +1,9 @@
 package service
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
@@ -10,18 +12,48 @@ import (
 	"github.com/Kimbbakar/yatt/repository"
 )
 
+var (
+	// key - id - date - note - description - deleted
+	prefixIndent2 = "  "
+	prefixIndent4 = "    "
+	lineDevider   = "|yatt@yatt|"
+)
+
+const (
+	KEY     = 0
+	ID      = 1
+	DATE    = 2
+	NOTE    = 3
+	DESC    = 4
+	DELETED = 5
+)
+
 type NoteService struct {
 }
 
 func (n *NoteService) CreateCommand(cmd *cobra.Command, args []string) error {
-	note, _ := cmd.Flags().GetString("note")
-	note = strings.TrimSpace(note)
-	if note == "" {
-		response("empty note not allowed", true, false, true)
+	repo := repository.GetNewLocalStorage()
+
+	if note, err := cmd.Flags().GetString("note"); err != nil {
+		response(err.Error(), true, false, true)
+	} else if note = strings.TrimSpace(note); note != "" {
+		return repo.AddNote(note, "")
 	}
 
-	repo := repository.GetNewLocalStorage()
-	repo.AddNote(note)
+	if note, err := cmd.Flags().GetString("note-with-description"); err != nil {
+		response(err.Error(), true, false, true)
+	} else if note = strings.TrimSpace(note); note != "" {
+		desc, err := n.inputDescription()
+		if err != nil {
+			response(err.Error(), true, false, true)
+		}
+
+		desc = strings.TrimSpace(desc)
+
+		return repo.AddNote(note, desc)
+	}
+
+	response("empty note not allowed", true, false, true)
 
 	return nil
 }
@@ -132,4 +164,28 @@ func (n *NoteService) DeleteCommand(cmd *cobra.Command, args []string) error {
 
 	response("No note found with given ID", false, false, true)
 	return nil
+}
+
+func (n *NoteService) inputDescription() (string, error) {
+	fmt.Println("\nAdd the description[entry empty line to terminate]")
+	in := bufio.NewReader(os.Stdin)
+	details := ""
+	for {
+		fmt.Print(prefixIndent4)
+		str, err := in.ReadString('\n')
+		str = strings.Trim(str, " ")
+
+		if err != nil {
+			return "", err
+		} else if str == "\n" {
+			break
+		}
+
+		if len(details) > 0 {
+			details += lineDevider
+		}
+		details += str
+	}
+
+	return details, nil
 }
