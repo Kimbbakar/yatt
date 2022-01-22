@@ -15,7 +15,7 @@ type NoteService struct {
 
 func (n *NoteService) CreateCommand(cmd *cobra.Command, args []string) error {
 	note, _ := cmd.Flags().GetString("note")
-	note = strings.Trim(note, " ")
+	note = strings.TrimSpace(note)
 	if note == "" {
 		response("empty note not allowed", true, false, true)
 	}
