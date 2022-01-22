@@ -80,16 +80,23 @@ func (n *NoteService) ListCommand(cmd *cobra.Command, args []string) error {
 		}
 
 		for i := len(notes) - 1; i >= 0 && tail > 0; i-- {
-			if deleted, err := strconv.Atoi(notes[i][4]); err != nil {
+			if deleted, err := strconv.Atoi(notes[i][DELETED]); err != nil {
 				response(err.Error(), true, false, true)
 			} else if deleted == 1 {
 				continue
 			}
 
-			fmt.Printf("ID: %s\n", notes[i][1])
-			fmt.Printf("Date: %s\n\n", notes[i][2])
-			fmt.Print("    ")
-			fmt.Printf("Note: %s\n", notes[i][3])
+			fmt.Printf("ID: %s\n", notes[i][ID])
+			fmt.Printf("Date: %s\n\n", notes[i][DATE])
+			fmt.Print(prefixIndent2)
+			fmt.Printf("Note: %s\n", notes[i][NOTE])
+			if lines := strings.Split(notes[i][DESC], lineDevider); len(lines) > 0 {
+				for _, l := range lines {
+					fmt.Print(prefixIndent4, l)
+				}
+				fmt.Println()
+			}
+
 			tail--
 
 			fmt.Println()
@@ -141,15 +148,15 @@ func (n *NoteService) DeleteCommand(cmd *cobra.Command, args []string) error {
 		}
 
 		for i := len(notes) - 1; i >= 0; i-- {
-			if strings.HasPrefix(notes[i][1], id) {
-				row := strings.Split(notes[i][0], "-")[2]
+			if strings.HasPrefix(notes[i][ID], id) {
+				row := strings.Split(notes[i][KEY], "-")[2]
 
 				updateValue := make([]interface{}, len(notes[i]))
 				for idx, v := range notes[i] {
 					updateValue[idx] = v
 				}
 
-				updateValue[4] = true
+				updateValue[DELETED] = true
 				repo.UpdateNote(curSheet, row, updateValue)
 				response("Note has been deleted successfully", false, false, true)
 				return nil
