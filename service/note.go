@@ -1,7 +1,9 @@
 package service
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
@@ -10,18 +12,48 @@ import (
 	"github.com/Kimbbakar/yatt/repository"
 )
 
+var (
+	// key - id - date - note - description - deleted
+	prefixIndent2 = "  "
+	prefixIndent4 = "    "
+	lineDevider   = "|yatt@yatt|"
+)
+
+const (
+	KEY     = 0
+	ID      = 1
+	DATE    = 2
+	NOTE    = 3
+	DESC    = 4
+	DELETED = 5
+)
+
 type NoteService struct {
 }
 
 func (n *NoteService) CreateCommand(cmd *cobra.Command, args []string) error {
-	note, _ := cmd.Flags().GetString("note")
-	note = strings.Trim(note, " ")
-	if note == "" {
-		response("empty note not allowed", true, false, true)
+	repo := repository.GetNewLocalStorage()
+
+	if note, err := cmd.Flags().GetString("note"); err != nil {
+		response(err.Error(), true, false, true)
+	} else if note = strings.TrimSpace(note); note != "" {
+		return repo.AddNote(note, "")
 	}
 
-	repo := repository.GetNewLocalStorage()
-	repo.AddNote(note)
+	if note, err := cmd.Flags().GetString("note-with-description"); err != nil {
+		response(err.Error(), true, false, true)
+	} else if note = strings.TrimSpace(note); note != "" {
+		desc, err := n.inputDescription()
+		if err != nil {
+			response(err.Error(), true, false, true)
+		}
+
+		desc = strings.TrimSpace(desc)
+
+		return repo.AddNote(note, desc)
+	}
+
+	response("empty note not allowed", true, false, true)
 
 	return nil
 }
@@ -48,16 +80,23 @@ func (n *NoteService) ListCommand(cmd *cobra.Command, args []string) error {
 		}
 
 		for i := len(notes) - 1; i >= 0 && tail > 0; i-- {
-			if deleted, err := strconv.Atoi(notes[i][4]); err != nil {
+			if deleted, err := strconv.Atoi(notes[i][DELETED]); err != nil {
 				response(err.Error(), true, false, true)
 			} else if deleted == 1 {
 				continue
 			}
 
-			fmt.Printf("ID: %s\n", notes[i][1])
-			fmt.Printf("Date: %s\n\n", notes[i][2])
-			fmt.Print("    ")
-			fmt.Printf("Note: %s\n", notes[i][3])
+			fmt.Printf("ID: %s\n", notes[i][ID])
+			fmt.Printf("Date: %s\n\n", notes[i][DATE])
+			fmt.Print(prefixIndent2)
+			fmt.Printf("Note: %s\n", notes[i][NOTE])
+			if lines := strings.Split(notes[i][DESC], lineDevider); len(lines) > 0 {
+				for _, l := range lines {
+					fmt.Print(prefixIndent4, l)
+				}
+				fmt.Println()
+			}
+
 			tail--
 
 			fmt.Println()
@@ -109,15 +148,15 @@ func (n *NoteService) DeleteCommand(cmd *cobra.Command, args []string) error {
 		}
 
 		for i := len(notes) - 1; i >= 0; i-- {
-			if strings.HasPrefix(notes[i][1], id) {
-				row := strings.Split(notes[i][0], "-")[2]
+			if strings.HasPrefix(notes[i][ID], id) {
+				row := strings.Split(notes[i][KEY], "-")[2]
 
 				updateValue := make([]interface{}, len(notes[i]))
 				for idx, v := range notes[i] {
 					updateValue[idx] = v
 				}
 
-				updateValue[4] = true
+				updateValue[DELETED] = true
 				repo.UpdateNote(curSheet, row, updateValue)
 				response("Note has been deleted successfully", false, false, true)
 				return nil
@@ -132,4 +171,28 @@ func (n *NoteService) DeleteCommand(cmd *cobra.Command, args []string) error {
 
 	response("No note found with given ID", false, false, true)
 	return nil
+}
+
+func (n *NoteService) inputDescription() (string, error) {
+	fmt.Println("\nAdd the description[entry empty line to terminate]")
+	in := bufio.NewReader(os.Stdin)
+	details := ""
+	for {
+		fmt.Print(prefixIndent4)
+		str, err := in.ReadString('\n')
+		str = strings.Trim(str, " ")
+
+		if err != nil {
+			return "", err
+		} else if str == "\n" {
+			break
+		}
+
+		if len(details) > 0 {
+			details += lineDevider
+		}
+		details += str
+	}
+
+	return details, nil
 }

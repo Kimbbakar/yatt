@@ -93,7 +93,7 @@ func (l *localStorageRepo) getNoteSheet() (string, error) {
 	return sheet, nil
 }
 
-func (l *localStorageRepo) AddNote(note string) error {
+func (l *localStorageRepo) AddNote(note, description string) error {
 	sheet, err := l.getNoteSheet()
 	if err != nil {
 		return err
@@ -106,8 +106,8 @@ func (l *localStorageRepo) AddNote(note string) error {
 	id := getUniqueID()
 	date := time.Now().Format(time.RFC1123)
 
-	// key - id - date - note - deleted
-	if err := l.client.SetSheetRow(sheet, row, &[]interface{}{key, id, date, note, false}); err != nil {
+	// key - id - date - note - description - deleted
+	if err := l.client.SetSheetRow(sheet, row, &[]interface{}{key, id, date, note, description, false}); err != nil {
 		return err
 	}
 
